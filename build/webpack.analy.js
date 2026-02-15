@@ -1,3 +1,6 @@
+/**
+ * 打包分析
+ */
 const prodConfig = require('./webpack.prod.js') // 引入打包配置
 const SpeedMeasurePlugin = require('speed-measure-webpack-plugin'); // 引入webpack打包速度分析插件
 const smp = new SpeedMeasurePlugin(); // 实例化分析插件

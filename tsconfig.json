@@ -1,27 +1,52 @@
-"compilerOptions": {
-  "target": "ES2020",
-  "useDefineForClassFields": true,
-  "module": "ESNext",
-  "lib": ["ES2020", "DOM", "DOM.Iterable"],
-  "skipLibCheck": true,
+{
+  "compilerOptions": {
+    /**
+    含义： 指定 TypeScript 编译后的 JavaScript 代码应该符合哪个 ECMAScript 标准版本。◦
+     作用： 如果你写了 async/await，而 target 设为 ES5，TS 会把它编译成一大坨 Generator 或 Promise 的辅助代码。
+     如果设为 ES2020，因为 ES2020 原生支持 async/await，TS 就会保留原样（或者做很少的转换）。◦
+     在此项目中： 因为后面还有 Babel (babel-loader) 来处理兼容性（转译成 ES5），所以这里设置高一点的版本（如 ES2020 或 ESNext）可以让 TS 产生的代码更干净，把脏活累活留给 Babel 做。
+     总结：target: "我要把代码变成多老的 JS？" -> "不用太老，ES2020 就行，剩下的交给 Babel。*/
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    /**
+      含义： 指定生成的 JavaScript 代码使用什么模块系统。◦
+      ESNext (或 ES2020+)： 使用原生的 import / export 语法（ES Modules）。◦
+      CommonJS： 使用 require / module.exports 语法（Node.js 默认）。◦
+      作用： 这对 Webpack 很重要！ Webpack 需要识别 import/export 语句来进行 Tree Shaking（摇树优化，去除未使用的代码）。
+      如果你设为 CommonJS，Webpack 就很难做 Tree Shaking 了。所以现代前端项目通常都设为 ESNext。
+      总结：module: "我要用什么方式引用模块？" -> "用最新的 import/export，方便 Webpack 优化。*/
+    "module": "ESNext",
+    /**
+     * 含义：告诉 TypeScript 编译器，你的运行环境（浏览器）支持哪些全局变量和 API，这样你在代码里用这些 API 时 TS 就不会报错。
+        ct也就是
+     * ES2020： 包含 ES2020 标准的所有核心 JS API 类型定义（如 Promise, BigInt, String.prototype.matchAll 等）。
+     * DOM： 包含浏览器 DOM API 的类型定义（如 window, document, HTMLElement, console.log 等）。如果不加这个，你在 TS 里写 document.getElementById 会报错找不到名称。
+     * DOM.Iterable： 包含 DOM 迭代器的类型定义（比如你可以用 for...of 循环遍历 NodeList）。
+     * 总结：lib: "我的代码在哪里运行，能用哪些原生功能？" -> "浏览器环境 (DOM) 且支持较新的 JS 语法 (ES2020)。/
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "skipLibCheck": true,
 
-  /* Bundler mode */
-  "moduleResolution": "bundler",
-  "allowImportingTsExtensions": true,
-  "resolveJsonModule": true,
-  "isolatedModules": true,
-  "noEmit": true,
-  "jsx": "preserve",
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "preserve",
 
-  /* Linting */
-  "strict": true,
-  "noUnusedLocals": true,
-  "noUnusedParameters": true,
-  "noFallthroughCasesInSwitch": true,
-  "paths": {
-    "@/*": [
-      "src/*"
-    ]
-  }
-},
-"include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.vue"],
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+
+
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "src/*"
+      ]
+    }
+  },
+  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.vue"]
+}
