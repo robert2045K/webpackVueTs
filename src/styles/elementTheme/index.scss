@@ -1,0 +1,11 @@
+/*
+*just override what you need
+*引用这个文件，就可以改主题了。
+*/
+@forward 'element-plus/theme-chalk/src/common/var.scss' with (
+  $colors: (
+    'primary': (
+      'base': green,
+    ),
+  )
+);
