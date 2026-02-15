@@ -15,23 +15,6 @@ const ImageMinimizerPlugin = require("image-minimizer-webpack-plugin");
 
 module.exports = merge(baseConfig, {
     mode: 'production', // 生产模式,会开启tree-shaking和压缩代码,以及其他优化
-    module : {
-        rules: [
-            //处理图片
-            {
-                test:/.(png|jpg|jpeg|gif|svg)$/, // 匹配图片文件
-                type: "asset", // type选择asset
-                parser: {
-                    dataUrlCondition: {
-                        maxSize: 10 * 1024, // 小于10kb转base64位
-                    }
-                },
-                generator:{
-                    filename:'static/images/[name].[contenthash:10][ext]', // 文件输出目录和命名
-                },
-            },
-        ]
-    }
     plugins: [
         //复制 public的内容
         new CopyWebpackPlugin({
@@ -83,12 +66,20 @@ module.exports = merge(baseConfig, {
             //压缩图片。
             new ImageMinimizerPlugin({
                 minimizer: {
-                    implementation: ImageMinimizerPlugin.imageminGenerate,
+                    implementation: ImageMinimizerPlugin.imageminMinify,
                     options: {
                         plugins: [
+                            //["gifsicle", { interlaced: true }],
+                            // ["jpegtran", { progressive: true }], //无损
+                            // ["optipng", { optimizationLevel: 5 }], //无损
                             ["gifsicle", { interlaced: true }],
-                            ["jpegtran", { progressive: true }],
-                            ["optipng", { optimizationLevel: 5 }],
+                            //mozjpeg: 是 Mozilla 开发的 JPEG 编码器，旨在提供比标准 JPEG 更高的压缩率，代价是轻微的质量损失（通常肉眼难以察觉）。
+                            // quality: 80 表示保留 80% 的质量。
+                            ["mozjpeg", { quality: 80 }], //
+                            //pngquant: 是一个针对 PNG 图片的有损压缩库。
+                            // 它通过将 24 位或 32 位的 RGBA PNG 图片转换为 8 位色深的调色板 PNG 图片（带有 alpha 通道），
+                            // 从而显著减小文件体积（通常能减少 60-80%）。quality: [0.6, 0.8] 表示尝试将图片质量控制在 60% 到 80% 之间。
+                            ["pngquant", { quality: [0.6, 0.8], }],
                             [
                                 "svgo",
                                 {
