@@ -6,6 +6,7 @@ const webpack = require('webpack');
 //提取css文件为单独文件。
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
+
 const isProdution = process.env.NODE_ENV === 'production';
 console.log(process.env.NODE_ENV, isProdution)
 const getStyleLoaders = (pre) => {
@@ -63,15 +64,28 @@ module.exports = {
             //处理vue
             {
                 test: /\.vue$/, // 匹配.vue文件
+                include: [path.resolve(__dirname, '../src')], // 只对项目src文件的vue进行loader解析
                 use: 'vue-loader', // 用vue-loader去解析vue文件
             },
             //处理ts
             {
                 test: /\.ts$/, // 匹配.ts文件
+                include: [path.resolve(__dirname, '../src')], // 只对项目src文件的vue进行loader解析
                 use: {
                     loader: 'babel-loader',
                     options: {
                         presets: [
+                            // [
+                            //     //处理js兼容性。
+                            //     "@babel/preset-env",
+                            //     {
+                            //         // 设置为usage会根据源代码中出现的使用情况，按需注入
+                            //         useBuiltIns: "usage",
+                            //         corejs: 3, // 确保安装了 core-js@3
+                            //     },
+                            // ],
+                            //处理js兼容性，用vue提供的
+                            '@vue/cli-plugin-babel/preset',
                             [
                                 // babel支持ts.
                                 "@babel/preset-typescript",
@@ -82,7 +96,51 @@ module.exports = {
                         ]
                     }
                 }
-            }
+            },
+            //处理图片
+            {
+                test: /\.(png|jpe?g|gif|webp|svg)$/,
+                type: 'asset',
+                parser: {
+                    dataUrlCondition: {
+                        maxSize: 10 * 1024 // 小于10kb的图片会被base64处理
+                    }
+                },
+                generator: {
+                    // 将图片文件输出到 static/imgs 目录中
+                    // 将图片文件命名 [hash:8][ext][query]
+                    // [hash:8]: hash值取8位
+                    // [ext]: 使用之前的文件扩展名
+                    // [query]: 添加之前的query参数
+                    filename: 'static/imgs/[hash:8][ext][query]',
+                },
+            },
+            //处理字体
+            {
+                test:/.(woff2?|eot|ttf|otf)$/, // 匹配字体图标文件
+                type: "asset", // type选择asset
+                parser: {
+                    dataUrlCondition: {
+                        maxSize: 10 * 1024, // 小于10kb转base64位
+                    }
+                },
+                generator:{
+                    filename:'static/fonts/[name][ext]', // 文件输出目录和命名
+                },
+            },
+            //处理其他媒体文件
+            {
+                test:/.(mp4|webm|ogg|mp3|wav|flac|aac)$/, // 匹配媒体文件
+                type: "asset", // type选择asset
+                parser: {
+                    dataUrlCondition: {
+                        maxSize: 10 * 1024, // 小于10kb转base64位
+                    }
+                },
+                generator:{
+                    filename:'static/media/[name][ext]', // 文件输出目录和命名
+                },
+            },
         ]
     },
     plugins: [
@@ -114,6 +172,20 @@ module.exports = {
         extensions: ['.vue', '.ts', '.js', '.json'],
         alias: {
             '@': path.join(__dirname, '../src')
-        }
+        },
+        /**
+         * 5.7 缩小模块搜索范围
+         * node里面模块有三种
+         * node核心模块
+         * node_modules模块
+         * 自定义文件模块
+         * 使用require和import引入模块时如果有准确的相对或者绝对路径,就会去按路径查询,如果引入的模块没有路径,会优先查询node核心模块,如果没有找到会去当前目录下node_modules中寻找,如果没有找到会查从父级文件夹查找node_modules,一直查到系统node全局模块。
+         *
+         * 这样会有两个问题,一个是当前项目没有安装某个依赖,但是上一级目录下node_modules或者全局模块有安装,就也会引入成功,但是部署到服务器时可能就会找不到造成报错,另一个问题就是一级一级查询比较消耗时间。可以告诉webpack搜索目录范围,来规避这两个问题。
+         *
+         * 修改webpack.base.js
+         * */
+        // 如果用的是pnpm 就暂时不要配置这个，会有幽灵依赖的问题，访问不到很多模块。
+        modules: [path.resolve(__dirname, '../node_modules')], // 查找第三方模块只在本项目的node_modules中查找
     }
 }
